@@ -49,12 +49,12 @@ public class Player : Person
     // Efeito elastico da pilha por script
     void MoveChildsScript(){
         if(GameManager.Instance.fisicType != GameManager.EnumFisicType.Script) return;
-        if(enemysCollected.ToArray().Length < 1) return;
+        if(enemysCollected.Count < 1) return;
 
         enemysCollected[0].transform.position = childsParent.position;
 
         // Percorre a lista de objetos empilhados, movendo cada objeto para a posição do objeto à sua frente
-        for (int i = 1; i < enemysCollected.ToArray().Length; i++)
+        for (int i = 1; i < enemysCollected.Count; i++)
         {
             Vector3 nextPosition = new Vector3(enemysCollected[i - 1].transform.position.x, 
                 childsParent.position.y + ((float)i/2) + .5f, enemysCollected[i - 1].transform.position.z);
@@ -68,11 +68,11 @@ public class Player : Person
     // Fixa PosY dos filhos no caso de usar EnumFisicType.Joint
     void FixPosYChild(){
         if(GameManager.Instance.fisicType != GameManager.EnumFisicType.Joint) return;
-        if(enemysCollected.ToArray().Length < 1) return;
+        if(enemysCollected.Count < 1) return;
 
         enemysCollected[0].transform.position = childsParent.position;
 
-        for (int i = 1; i < enemysCollected.ToArray().Length; i++)
+        for (int i = 1; i < enemysCollected.Count; i++)
         {
             float posY = childsParentPosY + ((float)i / 2);
             Vector3 fixedY = new Vector3(enemysCollected[i].transform.position.x, posY, enemysCollected[i].transform.position.z);
@@ -106,7 +106,7 @@ public class Player : Person
     // Coleta o inimigo para ser empilhado
     void Collect(Enemy enemy){
         var enemysCapacityFinal = enemysCapacity - 1;
-        float enemysCollectedFinal = enemysCollected.ToArray().Length;
+        float enemysCollectedFinal = enemysCollected.Count;
         if(enemysCapacityFinal < enemysCollectedFinal) return; // Retorna caso já tenha alcançado o limite de inimigos
 
         enemy.Collected();
@@ -114,15 +114,15 @@ public class Player : Person
 
         if(GameManager.Instance.fisicType == GameManager.EnumFisicType.NoFisic) {
             enemy.gameObject.transform.SetParent(childsParent);
-            float posY = ((float)enemysCollected.ToArray().Length / 2) - .5f;
+            float posY = ((float)enemysCollected.Count / 2) - .5f;
             float rotY = Random.Range(0, 360);
             enemy.transform.localPosition = new Vector3(0, posY, 0);
             enemy.transform.localEulerAngles = new Vector3(0, rotY, 0);
 
         } else if(GameManager.Instance.fisicType == GameManager.EnumFisicType.Joint) {
             Rigidbody stackRb;
-            if(enemysCollected.ToArray().Length == 1) stackRb = rb;
-            else stackRb = enemysCollected[enemysCollected.ToArray().Length - 2].gameObject.GetComponent<Rigidbody>();
+            if(enemysCollected.Count == 1) stackRb = rb;
+            else stackRb = enemysCollected[enemysCollected.Count - 2].gameObject.GetComponent<Rigidbody>();
             enemy.ConnectJoint(stackRb);
 
         }
@@ -140,7 +140,7 @@ public class Player : Person
 
     private void OnTriggerStay(Collider c) {
         if(c.gameObject == GameManager.Instance.Hud.BtnSellChild.gameObject) {
-            if(enemysCollected.ToArray().Length <= 0) return;
+            if(enemysCollected.Count <= 0) return;
             if(GameManager.Instance.Hud.SellingChilds() == 1) { // Quando completa o botão
                 SellChildrens();
             }
@@ -165,7 +165,7 @@ public class Player : Person
 
     // Vende as crianças empilhadas
     void SellChildrens(){
-        var gain = enemysCollected.ToArray().Length * GameManager.Instance.Hud.ChildPrice;
+        var gain = enemysCollected.Count * GameManager.Instance.Hud.ChildPrice;
         GameManager.Instance.Status.AddMoney(gain);
 
         foreach (Enemy enemy in enemysCollected){
@@ -173,7 +173,7 @@ public class Player : Person
             GameManager.Instance.ObjectPooler.Recicle (enemy.gameObject);
         }
         
-        GameManager.Instance.Spawner.AddEnemyCount(-enemysCollected.ToArray().Length);
+        GameManager.Instance.Spawner.AddEnemyCount(-enemysCollected.Count);
         enemysCollected.Clear();
     }
 }
